@@ -1,0 +1,37 @@
+import spacy
+import networkx as nx
+import matplotlib.pyplot as plt
+
+nlp = spacy.load("en_core_web_sm")
+
+text = input("Enter text to convert into a flowchart:\n")
+
+doc = nlp(text)
+actions = []
+
+for sent in doc.sents:
+    verbs = [tok.lemma_ for tok in sent if tok.pos_ == "VERB"]
+    nouns = [tok.text for tok in sent if tok.pos_ in ["NOUN", "PROPN"]]
+    if verbs:
+        actions.append(" ".join(verbs + nouns))
+
+if not actions:
+    actions = [sent.text for sent in doc.sents]
+
+G = nx.DiGraph()
+for i in range(len(actions) - 1):
+    G.add_edge(actions[i], actions[i + 1])
+
+plt.figure(figsize=(12, 6))
+pos = nx.spring_layout(G)
+nx.draw(
+    G,
+    pos,
+    with_labels=True,
+    node_color="lightblue",
+    node_size=2500,
+    font_size=10,
+    arrows=True,
+)
+plt.title("Flowchart from Text", fontsize=14)
+plt.show()
